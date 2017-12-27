@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SppParserExcel.ViewModel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,7 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace SppParserExcel
+namespace SppParserExcel.View
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -23,6 +24,7 @@ namespace SppParserExcel
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = new MainVM(this);
         }
     }
 }

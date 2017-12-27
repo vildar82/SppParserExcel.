@@ -1,0 +1,38 @@
+﻿<Window x:Class="SppParserExcel.View.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:local="clr-namespace:SppParserExcel"
+		xmlns:viewModel="clr-namespace:SppParserExcel.ViewModel" mc:Ignorable="d" Topmost="False"
+		d:DataContext="{d:DesignInstance viewModel:MainVM}" 
+		Title="Парсер Excel квартирографии" Height="350" Width="525">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+		</Grid.RowDefinitions>
+		<!--Путь к Excel файлу-->
+		<Grid Grid.Row="0" Margin="2">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition />
+				<ColumnDefinition Width="Auto" />
+			</Grid.ColumnDefinitions>
+			<TextBlock Text="Excel файл: " VerticalAlignment="Center" Margin="2" />
+			<TextBox Grid.Column="1" Text="{Binding ExcelFile}" ToolTip="Путь к файлу Excel" Margin="2" />
+			<Button Grid.Column="2" Content="Выбрать" Command="{Binding SelectExcel}" Margin="2" />
+		</Grid>
+		<!--Секции-->
+		<Grid Grid.Row="1">
+			
+		</Grid>
+		<!--Сохранение json-->
+		<Grid Row="2">
+			
+		</Grid>
+		<!--Ошибки-->
+		<Grid Row="3">
+			<ListBox ItemsSource="{Binding Errors}"/>
+		</Grid>
+	</Grid>
+</Window>
