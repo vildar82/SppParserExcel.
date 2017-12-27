@@ -1,11 +1,11 @@
 ﻿using JetBrains.Annotations;
 using OfficeOpenXml;
-using SppParserExcel.Model.Data;
+using SppData;
+using SppParserExcel.Lib;
 using SppParserExcel.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using SppParserExcel.Lib;
 
 namespace SppParserExcel.Model
 {
@@ -54,7 +54,8 @@ namespace SppParserExcel.Model
                         ExcelFileName = excelFile,
                         ExcelFileLastWrite = File.GetLastWriteTime(excelFile),
                         ParseData = DateTime.Now,
-                        Sections = GetSections()
+                        Sections = GetSections(),
+                        Apartments = apartmentsUnique
                     };
                 }
             }
@@ -71,7 +72,7 @@ namespace SppParserExcel.Model
             rOrient = 3;
             if (GetCellText(rOrient, cProp) != "Ориентация") throw new Exception($"Ячейка [{rOrient},{cProp}] != Ориентация");
             rMark = FindRow(rOrient + 1, cProp, "Марка");
-            
+
             rStudio = FindRow(rMark + 1, cProp, studioName);
             r1R = FindRow(rStudio + 1, cProp, apart1Name);
             r2R = FindRow(r1R + 1, cProp, apart2Name);
@@ -82,19 +83,19 @@ namespace SppParserExcel.Model
             rArea1Live = FindRow(rAreaCommon + 1, cProp, "S кв. 1 эт жилой");
             rArea1Bkfn = FindRow(rArea1Live + 1, cProp, "S кв. 1 эт БКФН");
 
-            var cSec = cProp +2;
+            var cSec = cProp + 2;
             while (true)
             {
                 var mark = GetCellText(rMark, cSec);
-                if(string.IsNullOrEmpty(mark)) break;
+                if (string.IsNullOrEmpty(mark)) break;
                 var section = new Section
                 {
-                    Mark = mark,
+                    Name = mark,
                     Orientation = GetCellText(rOrient, cSec),
                     AreaCommon = GetCellArea(rAreaCommon, cSec),
                     Area1Live = GetCellArea(rArea1Live, cSec),
                     Area1Bkfn = GetCellArea(rArea1Bkfn, cSec),
-                    Apartments = GetApartmentsInFloor(cSec, out var floors),
+                    ApartmentsInFloor = GetApartmentsInFloor(cSec, out var floors),
                     Floors = floors
                 };
                 sections.Add(section);
@@ -107,51 +108,53 @@ namespace SppParserExcel.Model
         private List<ApartmentInFloor> GetApartmentsInFloor(int col, out int floors)
         {
             floors = GetCellInt(rFloor, col);
-            var aparts = GetApartsType(rStudio, col, floors);
-            aparts.AddRange(GetApartsType(r1R, col, floors));
-            aparts.AddRange(GetApartsType(r2R, col, floors));
-            aparts.AddRange(GetApartsType(r3R, col, floors));
-            aparts.AddRange(GetApartsType(r4R, col, floors));
+            var aparts = GetApartsType(rStudio, col, floors, ApartmentTypeEnum.Studio);
+            aparts.AddRange(GetApartsType(r1R, col, floors, ApartmentTypeEnum.One));
+            aparts.AddRange(GetApartsType(r2R, col, floors, ApartmentTypeEnum.Two));
+            aparts.AddRange(GetApartsType(r3R, col, floors, ApartmentTypeEnum.Three));
+            aparts.AddRange(GetApartsType(r4R, col, floors, ApartmentTypeEnum.Four));
             return aparts;
         }
 
         [NotNull]
-        private List<ApartmentInFloor> GetApartsType(int rtype, int col, int floors)
+        private List<ApartmentInFloor> GetApartsType(int rtype, int col, int floors, ApartmentTypeEnum apartType)
         {
             var apartsInFloor = new List<ApartmentInFloor>();
-            var apart = GetApartInFloor(rtype + 1, col, floors, studioName, "S");
+            var apart = GetApartInFloor(rtype + 1, col, floors, apartType, ApartmentSizeEnum.S);
             if (apart != null) apartsInFloor.Add(apart);
 
-            apart = GetApartInFloor(rtype + 2, col, floors, studioName, "M");
+            apart = GetApartInFloor(rtype + 2, col, floors, apartType, ApartmentSizeEnum.M);
             if (apart != null) apartsInFloor.Add(apart);
 
-            apart = GetApartInFloor(rtype + 3, col, floors, studioName, "L");
+            apart = GetApartInFloor(rtype + 3, col, floors, apartType, ApartmentSizeEnum.L);
             if (apart != null) apartsInFloor.Add(apart);
 
             return apartsInFloor;
         }
 
         [CanBeNull]
-        private ApartmentInFloor GetApartInFloor(int r, int col, int floors, string apartType, string size)
+        private ApartmentInFloor GetApartInFloor(int r, int col, int floors, ApartmentTypeEnum apartType, ApartmentSizeEnum size)
         {
             var count = GetCellInt(r, col);
             if (count == 0) return null;
             var apart = GetApartment(apartType, size);
             return new ApartmentInFloor
             {
-                Apartment = apart,
+                ApartmentID = apart.ID,
+                Apartment =  apart,
                 Count = count / floors
             };
         }
 
         [NotNull]
-        private Apartment GetApartment(string apartType, string size)
+        private Apartment GetApartment(ApartmentTypeEnum apartType, ApartmentSizeEnum size)
         {
-            var apartNew = new Apartment {NameByRooms = apartType, Size = size};
-            var apart = apartmentsUnique.Find(a=>a.Equals(apartNew));
+            var apartNew = new Apartment { Type = apartType, Size = size };
+            var apart = apartmentsUnique.Find(a => a.Equals(apartNew));
             if (apart == null)
             {
                 apart = apartNew;
+                apart.ID = apartmentsUnique.Count+1;
                 apartmentsUnique.Add(apart);
             }
             return apart;
