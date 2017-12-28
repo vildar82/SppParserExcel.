@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using SppParserExcel.Lib;
 using SppParserExcel.Model;
 using SppParserExcel.MVVM;
 using System;
@@ -6,7 +7,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
-using SppParserExcel.Lib;
 
 namespace SppParserExcel.ViewModel
 {
@@ -44,10 +44,10 @@ namespace SppParserExcel.ViewModel
 
         private void ParseExcel()
         {
-            var parser = new Parser(e => Errors.Add(e));
+            var parser = new Parser();
             parser.Parse(ExcelFile);
             var jsonFile = Path.ChangeExtension(ExcelFile, "json");
-            parser.Data.Serialize(jsonFile);
+            parser.Data.Serialize(jsonFile ?? throw new InvalidOperationException());
             MessageBox.Show($"Готово - {jsonFile}");
         }
     }

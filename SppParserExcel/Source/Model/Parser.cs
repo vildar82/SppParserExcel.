@@ -2,7 +2,6 @@
 using OfficeOpenXml;
 using SppData;
 using SppParserExcel.Lib;
-using SppParserExcel.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,7 +10,6 @@ namespace SppParserExcel.Model
 {
     public class Parser
     {
-        private readonly Action<Error> addError;
         private int rOrient;
         private const int cProp = 2;
         private int rMark;
@@ -32,12 +30,7 @@ namespace SppParserExcel.Model
         private const string apart4Name = "4 комн";
         private readonly List<Apartment> apartmentsUnique = new List<Apartment>();
 
-        public Parser(Action<Error> addError)
-        {
-            this.addError = addError;
-        }
-
-        public SectionsData Data { get; set; }
+        public SectionsData Data { get; private set; }
 
         public void Parse([NotNull] string excelFile)
         {
@@ -141,7 +134,7 @@ namespace SppParserExcel.Model
             return new ApartmentInFloor
             {
                 ApartmentID = apart.ID,
-                Apartment =  apart,
+                Apartment = apart,
                 Count = count / floors
             };
         }
@@ -154,7 +147,7 @@ namespace SppParserExcel.Model
             if (apart == null)
             {
                 apart = apartNew;
-                apart.ID = apartmentsUnique.Count+1;
+                apart.ID = apartmentsUnique.Count + 1;
                 apartmentsUnique.Add(apart);
             }
             return apart;

@@ -1,6 +1,6 @@
-﻿using System.IO;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Newtonsoft.Json;
+using System.IO;
 
 namespace SppParserExcel.Lib
 {
@@ -12,7 +12,7 @@ namespace SppParserExcel.Lib
             return JsonConvert.DeserializeObject<T>(bsJson);
         }
 
-        public static void Serialize<T>(this T item, string file)
+        public static void Serialize<T>(this T item, [NotNull] string file)
         {
             var json = JsonConvert.SerializeObject(item);
             WriteText(file, json);
